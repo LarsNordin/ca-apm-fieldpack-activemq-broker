@@ -138,13 +138,13 @@ def writeMetrics(values, metricPath, metricDict):
 
 
 
-def collectActiveMQ(metricDict, metricPath, brokerhost, jmxport, brokername, username):
+def collectActiveMQ(metricDict, metricPath, brokerhost, jmxport, brokername, username, brokerurl):
 
     """
     Conversion of JMX data into metrics to be harvested
     """
 
-    url = "http://{0}:{1}/api/jolokia/read/org.apache.activemq:type=Broker,brokerName={2}".format(brokerhost, jmxport, urllib2.quote(brokername))
+    url = "http://{0}:{1}/{3}/read/org.apache.activemq:type=Broker,brokerName={2}".format(brokerhost, jmxport, urllib2.quote(brokername), brokerurl)
     data = callUrl(url, username)
     if (data.has_key('value')):
         values = data['value']
@@ -210,6 +210,8 @@ def main(argv):
         type = "int", dest = "jmxport", default = "8161")
     parser.add_option("-n", "--broker_name", help = "name of ActiveMQ broker",
         dest = "brokername", default = "localhost")
+    parser.add_option("--broker_url", help = "url path to Jolokia on ActiveMQ broker",
+        dest = "brokerurl", default = "api/jolokia")
 
     (options, args) = parser.parse_args();
 
@@ -235,7 +237,7 @@ def main(argv):
         # Metrics are collected in the metricDict dictionary.
         metricDict = {'metrics' : []}
 
-        collectActiveMQ(metricDict, options.metricPath, options.brokerhost, options.jmxport, options.brokername, options.user)
+        collectActiveMQ(metricDict, options.metricPath, options.brokerhost, options.jmxport, options.brokername, options.user, options.brokerurl)
 
         #
         # convert metric Dictionary into a JSON message via the
